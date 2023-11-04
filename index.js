@@ -32,9 +32,16 @@ async function run() {
     await client.connect();
 
     const featuresCollection = client.db("HotelDB").collection("Features");
+    const offerCollection = client.db("HotelDB").collection("Offer");
 
     app.get("/features",async(req,res) => {
         const cursor =  featuresCollection.find()
+        const result = await cursor.toArray();
+        res.send(result);
+    });
+
+    app.get("/offer",async(req,res) => {
+        const cursor =  offerCollection.find()
         const result = await cursor.toArray();
         res.send(result);
     });
