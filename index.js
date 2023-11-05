@@ -33,6 +33,7 @@ async function run() {
 
     const featuresCollection = client.db("HotelDB").collection("Features");
     const offerCollection = client.db("HotelDB").collection("Offer");
+    const roomCollection = client.db("HotelDB").collection("Rooms");
 
     app.get("/features",async(req,res) => {
         const cursor =  featuresCollection.find()
@@ -42,6 +43,23 @@ async function run() {
 
     app.get("/offer",async(req,res) => {
         const cursor =  offerCollection.find()
+        const result = await cursor.toArray();
+        res.send(result);
+    });
+
+    app.get("/rooms",async(req,res) => {
+
+      const sortObj = {};
+
+      const sortField = req.query.sortField
+      const sortOrder = req.query.sortOrder
+
+      if(sortField && sortOrder) {
+        sortObj[sortField] = sortOrder
+      }
+
+
+        const cursor =  roomCollection.find().sort(sortObj);
         const result = await cursor.toArray();
         res.send(result);
     });
