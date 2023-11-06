@@ -34,6 +34,8 @@ async function run() {
     const featuresCollection = client.db("HotelDB").collection("Features");
     const offerCollection = client.db("HotelDB").collection("Offer");
     const roomCollection = client.db("HotelDB").collection("Rooms");
+    const bookCollection = client.db("HotelDB").collection("bookings");
+    
 
     app.get("/features",async(req,res) => {
         const cursor =  featuresCollection.find()
@@ -70,6 +72,14 @@ async function run() {
        const result= await roomCollection.findOne(query);
        res.send(result);
     });
+
+    app.post("/bookings",async(req,res) => {
+      const data = req.body
+      const result = await bookCollection.insertOne(data);
+      res.send(result);
+    });
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
