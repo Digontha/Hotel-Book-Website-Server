@@ -89,6 +89,36 @@ async function run() {
         res.send(result);
     });
 
+    app.get("/bookings/update/:id",async(req,res) => {
+      const id= req.params.id
+      const query ={_id : new ObjectId(id)};
+      const result = await bookCollection.findOne(query)
+      res.send(result);
+
+    });
+
+    app.put("/bookings/update/:id",async(req,res) => {
+      const id = req.params.id
+      const filter = {_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const data = req.body
+      console.log(data);
+      const updateDoc = {
+        $set:{
+          date : data.newDate
+        }
+      }
+      const result = await bookCollection.updateOne(filter,updateDoc,options)
+      res.send(result);
+    });
+
+    app.delete("/bookings/update/:id",async(req,res) => {
+      const id = req.params.id
+      const query = {_id : new ObjectId(id)}
+      const results= await bookCollection.deleteOne(query)
+      res.send(results);
+    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
