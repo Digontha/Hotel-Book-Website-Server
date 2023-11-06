@@ -79,6 +79,15 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/bookings",async(req,res)=>{
+        let query = {}
+        if(req.query?.email){
+          query = {email : req.query.email}
+        }
+        const cursor = bookCollection.find(query)
+        const result = await cursor.toArray();
+        res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
