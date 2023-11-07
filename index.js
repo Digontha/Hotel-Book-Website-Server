@@ -59,6 +59,8 @@ async function run() {
     const roomCollection = client.db("HotelDB").collection("Rooms");
     const bookCollection = client.db("HotelDB").collection("bookings");
 
+    const reviewCollection = client.db("HotelDB").collection("Review");
+
     app.post("/jwt", async (req, res) => {
       const user = req.body
       console.log(user);
@@ -169,6 +171,22 @@ async function run() {
       const results= await bookCollection.deleteOne(query)
       res.send(results);
     });
+
+    app.post("/reviews",async(req, res) => {
+        const data = req.body
+        const result = await reviewCollection.insertOne(data)
+        res.send(result);
+    });
+
+    app.get("/reviews/:id",async(req, res)=>{
+      const id = req.params.id
+      const query = {room_id : id}
+      console.log(id);
+      const results = await reviewCollection.find(query).toArray()
+      res.send(results);
+    
+    });
+ 
 
 
     // Send a ping to confirm a successful connection
