@@ -1,12 +1,20 @@
 require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
+var cookieParser = require('cookie-parser')
+
 const app = express();
 const port = process.env.PORT || 5000;
 
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true
+}));
+
 app.use(express.json());
+app.use(cookieParser());
 
 
 app.get("/",(req,res)=>{
@@ -26,6 +34,21 @@ const client = new MongoClient(uri, {
   }
 });
 
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token
+  if (!token) {
+    return res.status(401).send({ message: "Invalid user" })
+  }
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "Invalid user err" })
+    }
+    req.user = decoded;
+    next()
+  })
+
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -35,6 +58,29 @@ async function run() {
     const offerCollection = client.db("HotelDB").collection("Offer");
     const roomCollection = client.db("HotelDB").collection("Rooms");
     const bookCollection = client.db("HotelDB").collection("bookings");
+
+    app.post("/jwt", async (req, res) => {
+      const user = req.body
+      console.log(user);
+      const token = jwt.sign(user, process.env.SECRET_KEY, { expiresIn: "1h" })
+      console.log(token);
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          
+        })
+        .send({ success: true });
+    });
+
+
+    app.post("/logout", async (req, res) => {
+      const user = req.body
+      console.log(user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+
+    })
     
 
     app.get("/features",async(req,res) => {
@@ -79,7 +125,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/bookings",async(req,res)=>{
+    app.get("/bookings",verifyToken ,async(req,res)=>{
+
+      if (req.user.email !== req.query.email) {
+        return res.status(403).send({ message: "forbidden" })
+      }
+      
         let query = {}
         if(req.query?.email){
           query = {email : req.query.email}
